@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow users to create, read, and update their own user profile
+    match /users/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
+    }
+
+    // Additional rules for future collections (to be updated in later steps)
+    
+    // Trips collection - users can manage their own trips and those they're collaborating on
+    match /trips/{tripId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid in resource.data.collaborators
+      );
+      allow write: if request.auth != null && (
+        // Owner can always write
+        request.auth.uid == resource.data.userId ||
+        // New trip creation
+        (request.auth.uid == request.resource.data.userId && resource == null)
+      );
+      
+      // Itinerary items subcollection
+      match /itineraryItems/{itemId} {
+        allow read, write: if request.auth != null && (
+          request.auth.uid == get(/databases/$(database)/documents/trips/$(tripId)).data.userId ||
+          request.auth.uid in get(/databases/$(database)/documents/trips/$(tripId)).data.collaborators
+        );
+      }
+      
+      // Expenses subcollection - same access rules as trip
+      match /expenses/{expenseId} {
+        allow read, write: if request.auth != null && (
+          request.auth.uid == get(/databases/$(database)/documents/trips/$(tripId)).data.userId ||
+          request.auth.uid in get(/databases/$(database)/documents/trips/$(tripId)).data.collaborators
+        );
+      }
+      
+      // Journal entries subcollection - same access rules as trip
+      match /journalEntries/{entryId} {
+        allow read, write: if request.auth != null && (
+          request.auth.uid == get(/databases/$(database)/documents/trips/$(tripId)).data.userId ||
+          request.auth.uid in get(/databases/$(database)/documents/trips/$(tripId)).data.collaborators
+        );
+      }
+    }
+
+    // SOS alerts - users can create and update their own alerts
+    match /sosAlerts/{alertId} {
+      allow read, write: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null;
+    }
+  }
+}

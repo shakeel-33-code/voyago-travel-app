@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "sos_alerts": {
+      // Any authenticated user can read all alerts (for emergency response teams)
+      ".read": "auth != null",
+      "$userId": {
+        // A user can only write/delete their own alert node
+        ".write": "auth != null && auth.uid == $userId",
+        ".validate": "newData.hasChildren(['uid', 'lat', 'lng', 'timestamp']) && newData.child('uid').val() == auth.uid"
+      }
+    },
+    // Deny access to all other paths by default
+    ".read": false,
+    ".write": false
+  }
+}

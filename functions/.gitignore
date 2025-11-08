@@ -1,0 +1,24 @@
+echo "# Flutter
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+.env
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Other
+*.log
+*.tmp" > .gitignore
